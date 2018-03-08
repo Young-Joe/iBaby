@@ -1,0 +1,38 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.FullScreen">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowAnimationStyle">@style/AnimationHomeActivity</item>
+    </style>
+
+    <!--&lt;!&ndash; 设置FlashActivity主题避免白屏 &ndash;&gt;-->
+    <style name="Theme.BackgroundTranslucent" parent="Theme.FullScreen">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.FullScreen" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="AnimationHomeActivity" mce_bogus="1" parent="@android:style/Animation.Activity">
+        <!-- 新的activity创建进入效果 -->
+        <item name="android:activityOpenEnterAnimation">@anim/anim_enter</item>
+        <!-- activity还没有finish()下退出效果 -->
+        <item name="android:activityOpenExitAnimation">@anim/anim_exit</item>
+        <!-- 上一个activity返回进入效果 -->
+        <item name="android:activityCloseEnterAnimation">@anim/back_enter</item>
+        <!-- activity finish()之后退出效果 -->
+        <item name="android:activityCloseExitAnimation">@anim/back_exit</item>
+    </style>
+
+
+</resources>
