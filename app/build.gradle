@@ -4,10 +4,12 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply plugin: 'org.greenrobot.greendao' //greendao plugin
+
 android {
     compileSdkVersion rootProject.ext.targetSDKVersion
     defaultConfig {
-        applicationId "com.bjgoodwill.nursestationscreen"
+        applicationId "com.joe.ibaby"
         minSdkVersion rootProject.ext.minSDKVersion
         targetSdkVersion rootProject.ext.targetSDKVersion
         versionCode rootProject.ext.versionCode
@@ -23,10 +25,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    //编译配置
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
     packagingOptions {
         exclude 'META-INF/rxjava.properties'
-        // ... and any other excludes go here
     }
+}
+
+greendao {
+    schemaVersion rootProject.ext.dbVersion
+    daoPackage 'com.joe.ibaby.dao.greendao'          //指定dao目录
+    targetGenDir 'src/main/java'                     //指定生成DaoMaster 、DaoSession、Dao位置
 }
 
 dependencies {
@@ -38,15 +50,17 @@ dependencies {
     implementation 'org.greenrobot:greendao:3.2.2'
     implementation rootProject.ext.designCompat
     implementation project(':customlibrary')
+    compile 'com.sdsmdg.tastytoast:tastytoast:0.1.1'
     compile 'com.alibaba:fastjson:1.2.33'
     //以下SDK开发者请根据需要自行选择
     //bmob-sdk：Bmob的android sdk包，包含了Bmob的数据存储、文件等服务，以下是最新的bmob-sdk:
     //3.5.5：请务必查看下面注释[1]
     compile 'cn.bmob.android:bmob-sdk:3.5.5'
-
     //bmob-push：Bmob的推送包
     compile 'cn.bmob.android:bmob-push:0.8'
-
     //如果你想应用能够兼容Android6.0，请添加此依赖(org.apache.http.legacy.jar)
     compile 'cn.bmob.android:http-legacy:1.0'
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
+    implementation 'com.zhihu.android:matisse:0.5.0-beta3'
+    compile 'com.soundcloud.android:android-crop:1.0.1@aar'
 }
