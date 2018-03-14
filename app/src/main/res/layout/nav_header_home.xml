@@ -39,13 +39,15 @@
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:visibility="gone"
         android:textColor="@color/white"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+        android:textSize="@dimen/text_small_size"/>
 
-    <TextSwitcher
-        android:id="@+id/ts_baby"
+    <TextView
+        android:id="@+id/tv_baby"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:text="android.studio@android.com"/>
+        android:text="Baby:"
+        android:textColor="@color/white"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
 </LinearLayout>

@@ -8,17 +8,33 @@ import com.joe.ibaby.R
  */
 object BmobUtil {
 
+    abstract class BaseBmobListener {
 
-    interface OnHandleBmobListener{
-        fun onSuccess()
+        abstract fun onNetNotAvailable()
+
+        abstract fun onError()
+
+    }
+
+    abstract class OnHandleBmobListener: BaseBmobListener() {
+
+        override fun onNetNotAvailable() {}
+
+        override fun onError() {}
+
+        abstract fun onSuccess()
+
     }
 
     fun onHandleBmob(e: BmobException?, listener: OnHandleBmobListener?) {
         if (isSuccess(e)) {
             listener?.onSuccess()
         }else {
-            isNetNotAvailable(e)
-            isUniqueConflict(e)
+            when {
+                isNetNotAvailable(e) -> {listener?.onError() }
+                isUniqueConflict(e) -> { }
+                else -> listener?.onError()
+            }
         }
     }
 
@@ -30,20 +46,24 @@ object BmobUtil {
         return e == null
     }
 
-    private fun isNetNotAvailable(e: BmobException?) {
-        e?.run {
+    private fun isNetNotAvailable(e: BmobException?): Boolean {
+        if (e != null) {
             if (e.errorCode == 9016) {
                 TastyToastUtil.showError(ResourceUtil.getString(R.string.app_net_not_available))
+                return true
             }
         }
+        return false
     }
 
-    private fun isUniqueConflict(e: BmobException?) {
-        e?.run {
+    private fun isUniqueConflict(e: BmobException?): Boolean {
+        if (e != null) {
             if (e.errorCode == 401) {
                 TastyToastUtil.showError(ResourceUtil.getString(R.string.txt_unique_error))
+                return true
             }
         }
+        return false
     }
 
 

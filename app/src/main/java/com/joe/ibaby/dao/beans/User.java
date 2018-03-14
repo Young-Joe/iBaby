@@ -27,6 +27,9 @@ public class User extends BaseBean {
     private String bmobObjId;
 
     @Transient
+    private Baby baby;
+
+    @Transient
     private BmobFile userHead;
 
     @Generated(hash = 534687770)
@@ -100,5 +103,13 @@ public class User extends BaseBean {
         if (gender != -1)  {
             this.gender = gender;
         }
+    }
+
+    public Baby getBaby() {
+        return baby;
+    }
+
+    public void setBaby(Baby baby) {
+        this.baby = baby;
     }
 }

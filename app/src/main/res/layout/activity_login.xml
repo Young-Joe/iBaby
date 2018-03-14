@@ -103,8 +103,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginLeft="12dp"
-                android:textColor="@color/txt_login_btn_selector"
-                android:background="@drawable/bg_btn_stroke_shape"
+                android:textColor="@color/white"
+                android:background="@drawable/bg_btn_solid_shape"
                 android:text="@string/txt_login_sign"/>
 
         </LinearLayout>

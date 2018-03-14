@@ -25,7 +25,7 @@ public class Baby extends BaseBean {
     // bmob主键
     private String bmobObjId;
     //性别 1 男 2 女
-    private int gender = 1;
+    private int gender = DEFAULT_GENDER;
     private String age = TEXT_EMPTY;
 
     @Transient
@@ -93,5 +93,13 @@ public class Baby extends BaseBean {
 
     public void setAge(String age) {
         this.age = age;
+    }
+
+    public BmobFile getBabyPic() {
+        return babyPic;
+    }
+
+    public void setBabyPic(BmobFile babyPic) {
+        this.babyPic = babyPic;
     }
 }

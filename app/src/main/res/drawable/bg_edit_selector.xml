@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+
+            <solid android:color="@color/translate"/>
+
+            <stroke
+                android:width="0.5dp"
+                android:color="@color/colorPrimary"/>
+
+            <corners android:radius="5dp"/>
+
+        </shape>
+    </item>
+
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+
+            <solid android:color="@color/translate"/>
+
+            <stroke
+                android:width="0.5dp"
+                android:color="@color/colorPrimary"/>
+
+            <corners android:radius="5dp"/>
+
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle"><!-- android:shape="" 表示是圆角矩形还是椭圆等等 -->
+
+            <solid android:color="@color/translate"/> <!-- 背景颜色 -->
+
+            <stroke
+                android:width="0.5dp"
+                android:color="@color/txt_normal"/> <!-- 图片边框属性 -->
+
+            <corners android:radius="5dp"/> <!-- 圆角的程度 -->
+
+        </shape>
+    </item>
+</selector>

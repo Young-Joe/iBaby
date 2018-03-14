@@ -10,25 +10,32 @@ import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.view.MenuItem
 import android.view.View
-import android.widget.TextSwitcher
 import android.widget.TextView
 import cn.bmob.v3.datatype.BmobFile
 import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.UpdateListener
 import cn.bmob.v3.listener.UploadFileListener
 import com.jakewharton.rxbinding2.view.RxView
+import com.joe.customlibrary.common.CommonUtils
 import com.joe.customlibrary.common.SystemBarHelper
+import com.joe.customlibrary.rxjava.RxObservable
 import com.joe.customlibrary.utils.FileUtils
 import com.joe.customlibrary.utils.ToastUtil
 import com.joe.customlibrary.view.CircleImageView
 import com.joe.ibaby.MainApplication
 import com.joe.ibaby.R
 import com.joe.ibaby.base.BaseActivity
+import com.joe.ibaby.dao.beans.Baby
 import com.joe.ibaby.dao.beans.BaseBean
+import com.joe.ibaby.dao.beans.PackageBean
 import com.joe.ibaby.dao.beans.User
+import com.joe.ibaby.dao.offline.OffLineDataLogic
 import com.joe.ibaby.helper.*
+import com.joe.ibaby.helper.AppUtil.REQUEST_CODE_CHOOSE
+import com.joe.ibaby.helper.AppUtil.REQUEST_CODE_LOGIN
 import com.joe.ibaby.ui.add.AddBabyActivity
 import com.joe.ibaby.ui.login.LoginActivity
+import com.shundaojia.live.Live
 import com.soundcloud.android.crop.Crop
 import com.zhihu.matisse.Matisse
 import kotlinx.android.synthetic.main.activity_home.*
@@ -37,14 +44,12 @@ import java.io.File
 
 class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-    val REQUEST_CODE_LOGIN = 10
-    val REQUEST_CODE_CHOOSE = AppUtil.REQUEST_CODE_CHOOSE
 
     private var mHeaderLayout: View? = null
     private var mIvUserHeader: CircleImageView? = null
     private var mTvHintLogin: TextView? = null
     private var mTvNickname: TextView? = null
-    private var mTsBaby: TextSwitcher? = null
+    private var mTvBaby: TextView? = null
 
     private var mUser: User? = null
 
@@ -74,25 +79,46 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         mIvUserHeader = mHeaderLayout?.findViewById(R.id.iv_head)
         mTvHintLogin = mHeaderLayout?.findViewById(R.id.tv_hint_login)
         mTvNickname = mHeaderLayout?.findViewById(R.id.tv_nickname)
-        mTsBaby = mHeaderLayout?.findViewById(R.id.ts_baby)
+        mTvBaby = mHeaderLayout?.findViewById(R.id.tv_baby)
 
     }
 
     override fun initData() {
+        initUserInfoView()
         initUserInfo()
-
     }
 
     private fun initUserInfo() {
-        mUser = MainApplication.getUser()
-        isShowUserInfo(mUser != null)
+        if (!CommonUtils.isTextEmpty(MainApplication.getCurrentUserId())) {
+            RxObservable<PackageBean>().getObservableIo {
+                return@getObservableIo OffLineDataLogic.instance!!.getUserByIdInPkg(MainApplication.getCurrentUserId())
+            }.subscribe {
+                        if (it.isDataRight) {
+                            mUser = it.obj as User?
+                        }
+                        initUserInfoView()
+                    }
+        }
+    }
+
+    private fun initUserInfoView() {
+        isShowUserInfoView(mUser != null)
         if (mUser != null) {
             mTvNickname?.text = mUser!!.nickName
             loadUserHead()
             RxView.clicks(mIvUserHeader!!)
                     .subscribe { setUserHead() }
-
-        }else {
+            RxObservable<PackageBean>().getObservableIo {
+                return@getObservableIo OffLineDataLogic.instance?.getBabyByIdInPkg(mUser!!.userId)
+            }
+                    .compose(Live.bindLifecycle(this))
+                    .subscribe {
+                        if (it.isDataRight) {
+                            mUser!!.baby = it.obj as Baby?
+                            showBabyInfoView(it.obj as Baby?)
+                        }
+                    }
+        } else {
             mIvUserHeader?.setImageResource(R.mipmap.ic_default_baby)
             RxView.clicks(mIvUserHeader!!)
                     .subscribe { startActivityForResult(Intent(this, LoginActivity::class.java), REQUEST_CODE_LOGIN) }
@@ -105,11 +131,18 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
-    private fun isShowUserInfo(isShow: Boolean) {
+    private fun isShowUserInfoView(isShow: Boolean) {
         mTvHintLogin?.visibility = if (isShow) { View.GONE } else { View.VISIBLE }
 
         mTvNickname?.visibility = if (isShow) { View.VISIBLE } else { View.GONE }
-        mTsBaby?.visibility = if (isShow) { View.VISIBLE } else { View.GONE }
+        mTvBaby?.visibility = if (isShow) { View.VISIBLE } else { View.GONE }
+        mTvBaby?.setText("Baby : 您还没有添加宝宝哟~")
+    }
+
+
+    private fun showBabyInfoView(baby: Baby?) {
+        mTvBaby?.setText("Baby : " + baby?.babyName + "已经" +baby?.age + "啦~")
+
     }
 
     override fun onBackPressed() {
@@ -141,13 +174,16 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 }
             }
             R.id.nav_gallery -> {
-                if (isUserLogin()) { startActivity(Intent(this, AddBabyActivity::class.java)) } else {
+                if (isUserLogin()) {
+                    val intent = Intent(this, AddBabyActivity::class.java)
+                    intent.putExtra(AppUtil.CURRENT_USER, mUser)
+                    startActivityForResult(intent, AppUtil.REQUEST_CODE_ADD_BABY)
+                } else {
                     TastyToastUtil.showInfo("哼!你还没登录呢")
                 }
             }
             R.id.nav_logout -> {
                 PreferenceUtil.saveField(PreferenceUtil.CURRENT_USER, BaseBean.TEXT_EMPTY)
-                MainApplication.setUser(null)
                 initUserInfo()
             }
             R.id.nav_manage -> {
@@ -200,6 +236,8 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     }
                 }
             })
+        }else if (requestCode == AppUtil.REQUEST_CODE_ADD_BABY && resultCode == Activity.RESULT_OK) {
+            initUserInfo()
         }
     }
 

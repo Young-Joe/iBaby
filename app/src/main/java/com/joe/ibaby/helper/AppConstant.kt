@@ -27,7 +27,6 @@ object AppConstant {
                         + File.separator)
             } else {
                 //SYS_PATH = "/data/data/com.bjgoodwill.care/databases/";
-
                 SYS_PATH = (MainApplication.getContext().filesDir.absolutePath
                         + File.separator
                         + APP_PATH

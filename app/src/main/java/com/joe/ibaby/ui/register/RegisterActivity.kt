@@ -9,6 +9,7 @@ import com.jakewharton.rxbinding2.widget.RxRadioGroup
 import com.joe.customlibrary.common.CommonUtils
 import com.joe.ibaby.R
 import com.joe.ibaby.base.BaseActivity
+import com.joe.ibaby.dao.beans.BaseBean.DEFAULT_GENDER
 import com.joe.ibaby.dao.beans.User
 import com.joe.ibaby.helper.BmobUtil
 import com.joe.ibaby.helper.DialogUtil
@@ -38,7 +39,12 @@ class RegisterActivity : BaseActivity() {
 
         RxRadioGroup.checkedChanges(rg_gender)
                 .subscribe {
-                    userGender = it
+                    if (it == R.id.rdbtn_women) {
+                        userGender = 2
+                    } else {
+                        userGender = DEFAULT_GENDER
+                    }
+
                 }
 
     }
@@ -83,7 +89,7 @@ class RegisterActivity : BaseActivity() {
                     user.save(object : SaveListener<String>() {
                         override fun done(objectId: String?, e: BmobException?) {
                             CommonUtils.dismiss(dialog, mContext)
-                            BmobUtil.onHandleBmob(e, object : BmobUtil.OnHandleBmobListener {
+                            BmobUtil.onHandleBmob(e, object : BmobUtil.OnHandleBmobListener() {
                                 override fun onSuccess() {
                                     TastyToastUtil.showOK("注册成功,开启登录吧~")
                                     val intent = Intent()

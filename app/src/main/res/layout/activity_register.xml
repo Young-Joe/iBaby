@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_light_gray"
+    android:animateLayoutChanges="true"
     tools:context="com.joe.ibaby.ui.register.RegisterActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -47,6 +48,7 @@
         android:orientation="vertical"
         android:paddingLeft="25dp"
         android:paddingRight="25dp"
+        android:animateLayoutChanges="true"
         app:layout_constraintTop_toBottomOf="@+id/tv_logo">
 
         <com.joe.ibaby.view.AnimLineEditText
@@ -101,6 +103,7 @@
             android:gravity="center_vertical">
 
             <android.support.v7.widget.AppCompatRadioButton
+                android:id="@+id/rdbtn_man"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -108,7 +111,8 @@
                 android:checked="true"
                 android:text="汉纸~"/>
 
-            <RadioButton
+            <android.support.v7.widget.AppCompatRadioButton
+                android:id="@+id/rdbtn_women"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

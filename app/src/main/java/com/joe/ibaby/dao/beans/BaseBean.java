@@ -15,6 +15,9 @@ public class BaseBean extends BmobObject {
 	public static final int DATA_UNUPLOAD = 4;
 	public static final String TEXT_EMPTY = "";
 
+	//默认性别为1 男
+	public static final int DEFAULT_GENDER = 1;
+
 	private int MsgId = ERR_TYPE;
 
 	public boolean isDataRight() {

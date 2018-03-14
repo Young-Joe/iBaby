@@ -12,14 +12,16 @@ import cn.bmob.v3.listener.FindListener
 import com.jakewharton.rxbinding2.view.RxView
 import com.jakewharton.rxbinding2.widget.RxTextView
 import com.joe.customlibrary.common.CommonUtils
+import com.joe.customlibrary.rxjava.RxObservable
 import com.joe.customlibrary.utils.FileUtils
-import com.joe.ibaby.MainApplication
 import com.joe.ibaby.R
 import com.joe.ibaby.base.BaseActivity
+import com.joe.ibaby.dao.beans.Baby
 import com.joe.ibaby.dao.beans.User
 import com.joe.ibaby.dao.offline.OffLineDataLogic
 import com.joe.ibaby.helper.*
 import com.joe.ibaby.ui.register.RegisterActivity
+import com.shundaojia.live.Live
 import io.reactivex.Observable
 import io.reactivex.functions.BiFunction
 import kotlinx.android.synthetic.main.activity_login.*
@@ -128,21 +130,37 @@ class LoginActivity : BaseActivity(){
         bmobQuery.findObjects(object : FindListener<User>(){
             override fun done(users: MutableList<User>?, e: BmobException?) {
                 CommonUtils.dismiss(dialog, mContext)
-                BmobUtil.onHandleBmob(e, object : BmobUtil.OnHandleBmobListener{
+                BmobUtil.onHandleBmob(e, object : BmobUtil.OnHandleBmobListener() {
                     override fun onSuccess() {
                         if (users?.size == 0) {
                             TastyToastUtil.showInfo("请检查账号.密码是否正确")
                         }else {
-                            MainApplication.setUser(users?.get(0))
-                            PreferenceUtil.saveField(PreferenceUtil.CURRENT_USER, users?.get(0)?.userId)
-                            OffLineDataLogic.instance?.saveUser(users?.get(0))
-                            checkLocalUserHeader(users?.get(0)!!)
+                            saveCurrentUser(users!![0])
+                            checkUserBaby(users[0])
                         }
                     }
+
+                    override fun onError() {
+                        RxObservable<User>()
+                                .getObservableIo { OffLineDataLogic.instance?.getUserById(user.userId) }
+                                .compose(Live.bindLifecycle(this@LoginActivity))
+                                .subscribe { t ->
+                                    if (t != null) {
+                                        if (t.password.equals(user.password)) {
+                                            saveCurrentUser(users!![0])
+                                            loginSuccess(true)
+                                        }else {
+                                            TastyToastUtil.showError("阿欧, 密码不对哦~")
+                                        }
+                                    }else{
+                                        TastyToastUtil.showError("阿欧, 你好像还没注册哦~")
+                                    }
+                                }
+                    }
+
                 })
             }
         })
-
     }
 
     private fun <T : TextInputLayout> observeTxtInputLayout(notEmpty: Boolean, txtInputLayout: T) {
@@ -151,6 +169,49 @@ class LoginActivity : BaseActivity(){
                 txtInputLayout.isErrorEnabled = false
             }
         }
+    }
+
+    private fun saveCurrentUser(user: User) {
+        PreferenceUtil.saveField(PreferenceUtil.CURRENT_USER, user.userId)
+        OffLineDataLogic.instance?.saveUser(user)
+    }
+
+    private fun checkUserBaby(user: User) {
+        val dialog = DialogUtil.showProgress(this, "Baby数据加载中...")
+        val baby = Baby()
+        baby.userId = user.userId
+
+        val bmobQuery = BmobQuery<Baby>()
+        bmobQuery.addWhereEqualTo("userId", baby.userId)
+        bmobQuery.findObjects(object : FindListener<Baby>() {
+            override fun done(p0: MutableList<Baby>?, p1: BmobException?) {
+                CommonUtils.dismiss(dialog, mContext)
+                BmobUtil.onHandleBmob(p1, object : BmobUtil.OnHandleBmobListener(){
+                    override fun onSuccess() {
+                        checkBabyPic(p0?.get(0))
+                        checkLocalUserHeader(user)
+                    }
+
+                    override fun onError() {
+                        checkLocalUserHeader(user)
+                    }
+                })
+            }
+
+        })
+    }
+
+    private fun checkBabyPic(baby: Baby?) {
+        if (baby == null) return
+        if (!FileUtils.isFileExist(AppUtil.getBabyPicPath(baby!!)) && baby.babyPic != null) {
+            baby.babyPic.download(File(AppUtil.getBabyPicPath(baby)), object : DownloadFileListener() {
+                override fun onProgress(p0: Int?, p1: Long) {}
+
+                override fun done(p0: String?, p1: BmobException?) {}
+
+            })
+        }
+
     }
 
     private fun checkLocalUserHeader(user: User) {
@@ -171,17 +232,17 @@ class LoginActivity : BaseActivity(){
                     } else {
                         TastyToastUtil.showError("哼!你的头怎么这么大~下载失败啦.下次再说吧")
                     }
-                    loginSuccess()
+                    loginSuccess(false)
                 }
             })
         }else {
-            TastyToastUtil.showOK("登录加载成功~开启爱宝生活吧")
-            loginSuccess()
+            loginSuccess(true)
         }
 
     }
 
-    private fun loginSuccess() {
+    private fun loginSuccess(showToast: Boolean) {
+        if (showToast) { TastyToastUtil.showOK("登录成功~开启爱宝生活吧") }
         setResult(Activity.RESULT_OK)
         onBackPressed()
     }

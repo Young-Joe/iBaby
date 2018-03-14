@@ -1,6 +1,7 @@
 package com.joe.ibaby.dao.offline
 
 import com.joe.ibaby.dao.beans.Baby
+import com.joe.ibaby.dao.beans.PackageBean
 import com.joe.ibaby.dao.beans.User
 import com.joe.ibaby.dao.greendao.BabyDao
 import com.joe.ibaby.dao.greendao.UserDao
@@ -85,6 +86,44 @@ class OffLineDataLogic private constructor(){
             TastyToastUtil.showInfo("查询异常")
         }finally {
             return baby
+        }
+    }
+
+    @Synchronized
+    fun getUserByIdInPkg(userId: String): PackageBean?{
+        val packageBean = PackageBean()
+        packageBean.setDataNull()
+        try {
+            val user = DbManager.daoSession.userDao.queryBuilder()
+                    .where(UserDao.Properties.UserId.eq(userId))
+                    .unique()
+            if (user != null) {
+                packageBean.obj = user
+                packageBean.setDataRight()
+            }
+        }catch (e: Exception) {
+            TastyToastUtil.showInfo("查询异常")
+        }finally {
+            return packageBean
+        }
+    }
+
+    @Synchronized
+    fun getBabyByIdInPkg(userId: String): PackageBean?{
+        val packageBean = PackageBean()
+        packageBean.setDataNull()
+        try {
+            val baby = DbManager.daoSession.babyDao.queryBuilder()
+                    .where(BabyDao.Properties.UserId.eq(userId))
+                    .unique()
+            if (baby != null) {
+                packageBean.obj = baby
+                packageBean.setDataRight()
+            }
+        }catch (e: Exception) {
+            TastyToastUtil.showInfo("查询异常")
+        }finally {
+            return packageBean
         }
     }
 
