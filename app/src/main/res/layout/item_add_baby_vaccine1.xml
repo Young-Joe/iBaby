@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center_vertical"
+              android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/tv_age"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:gravity="center"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:text="Time"
+        android:textColor="@color/gray"
+        android:textSize="@dimen/text_default_size"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_pack"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
+
+        <com.joe.ibaby.view.VerticalDashedLine
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"/>
+
+        <Button
+            android:id="@+id/btn_pack"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:enabled="true"
+            android:layout_centerInParent="true"
+            android:background="@mipmap/ic_vaccine_small_active"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="7"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/tv_vaccine"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Vaccine"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_default_size"/>
+
+            <TextView
+                android:id="@+id/tv_times"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="第四剂"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/text_mini_size"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_info"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_mini_size"
+                android:textColor="@color/txt_normal"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

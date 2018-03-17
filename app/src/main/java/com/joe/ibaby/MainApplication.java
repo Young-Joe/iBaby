@@ -12,15 +12,12 @@ import cn.bmob.v3.Bmob;
 
 public class MainApplication extends BaseApplication {
 
-    private static String sCurrentUserId;
-
     @Override
     public void onCreate() {
         super.onCreate();
         BaseApplication.setContext(getApplicationContext());
 
         Bmob.initialize(this, "b8cc25a7a37d76437da7c365b539d352", "bmob");
-
 
     }
 

@@ -62,5 +62,9 @@
         <item name="android:background">@color/txt_normal</item>
     </style>
 
+    <declare-styleable name="VerticalDashedLine">
+        <attr name="lineWidth" format="dimension"/>
+        <attr name="lineColor" format="color"/>
+    </declare-styleable>
 
 </resources>

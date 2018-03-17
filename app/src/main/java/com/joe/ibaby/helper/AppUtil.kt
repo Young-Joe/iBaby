@@ -1,5 +1,6 @@
 package com.joe.ibaby.helper
 
+import com.joe.customlibrary.common.CommonUtils
 import com.joe.customlibrary.utils.TimeUtils
 import com.joe.ibaby.dao.beans.Baby
 import com.joe.ibaby.dao.beans.User
@@ -32,10 +33,18 @@ object AppUtil {
         }
     }
 
-    fun getBabyAge(birth: String): String{
-        var age: String
-        val days = TimeUtils.getDateDif(birth)
+    fun getBabyAge(birth: String?): Int{
+        return TimeUtils.getDateDif(birth).toInt()
+    }
+
+    fun getBabyAgeInfo(birth: String?): String{
+        var info = ""
+        if (CommonUtils.isTextEmpty(birth)){
+            return info
+        }
+        val days = getBabyAge(birth)
         if (days >= 365) {
+            val age: String
             val years = days / 365
             val month = (days % 365) / 30
             if (month.toInt() == 0) {
@@ -43,10 +52,18 @@ object AppUtil {
             }else {
                 age = years.toString() + "岁" + month + "个月"
             }
+            info = "已经" +age + "啦~"
+        }else if (days > 0){
+            info = "已经" + days.toString() + "天啦~"
+        }else if (days.toInt() == 0) {
+            info = "今天出生啦~"
+        }else if (days > -30) {
+            info = "还有" + Math.abs(days) + "天就要来到这个世界啦~"
         }else {
-            age = days.toString() + "天"
+            info = "宝宝来到这个世界还有一段时间哟!"
         }
-        return  age
+        return  info
     }
+
 
 }

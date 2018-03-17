@@ -188,6 +188,7 @@ class LoginActivity : BaseActivity(){
                 CommonUtils.dismiss(dialog, mContext)
                 BmobUtil.onHandleBmob(p1, object : BmobUtil.OnHandleBmobListener(){
                     override fun onSuccess() {
+                        OffLineDataLogic.instance?.saveBaby(p0?.get(0)!!)
                         checkBabyPic(p0?.get(0))
                         checkLocalUserHeader(user)
                     }
@@ -205,7 +206,9 @@ class LoginActivity : BaseActivity(){
         if (baby == null) return
         if (!FileUtils.isFileExist(AppUtil.getBabyPicPath(baby!!)) && baby.babyPic != null) {
             baby.babyPic.download(File(AppUtil.getBabyPicPath(baby)), object : DownloadFileListener() {
-                override fun onProgress(p0: Int?, p1: Long) {}
+                override fun onProgress(p0: Int?, p1: Long) {
+
+                }
 
                 override fun done(p0: String?, p1: BmobException?) {}
 

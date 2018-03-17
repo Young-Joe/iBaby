@@ -44,7 +44,6 @@ import java.io.File
 
 class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-
     private var mHeaderLayout: View? = null
     private var mIvUserHeader: CircleImageView? = null
     private var mTvHintLogin: TextView? = null
@@ -86,9 +85,10 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     override fun initData() {
         initUserInfoView()
         initUserInfo()
+        
     }
 
-    private fun initUserInfo() {
+    fun initUserInfo() {
         if (!CommonUtils.isTextEmpty(MainApplication.getCurrentUserId())) {
             RxObservable<PackageBean>().getObservableIo {
                 return@getObservableIo OffLineDataLogic.instance!!.getUserByIdInPkg(MainApplication.getCurrentUserId())
@@ -98,6 +98,9 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         }
                         initUserInfoView()
                     }
+        }else {
+            mUser = null
+            initUserInfoView()
         }
     }
 
@@ -141,7 +144,7 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
 
     private fun showBabyInfoView(baby: Baby?) {
-        mTvBaby?.setText("Baby : " + baby?.babyName + "已经" +baby?.age + "啦~")
+        mTvBaby?.setText("Baby : " + baby?.babyName + " " + AppUtil.getBabyAgeInfo(baby?.babyBirth))
 
     }
 

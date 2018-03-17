@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.widget.DatePicker
 import cn.bmob.v3.datatype.BmobFile
@@ -12,20 +13,21 @@ import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.SaveListener
 import cn.bmob.v3.listener.UpdateListener
 import cn.bmob.v3.listener.UploadFileListener
+import com.alibaba.fastjson.JSONArray
 import com.joe.customlibrary.common.CommonUtils
 import com.joe.customlibrary.common.SystemBarHelper
-import com.joe.customlibrary.rxjava.RxObservable
+import com.joe.customlibrary.utils.FileUtils
+import com.joe.customlibrary.utils.TimeUtils
 import com.joe.customlibrary.utils.ToastUtil
 import com.joe.ibaby.R
 import com.joe.ibaby.base.BaseActivity
 import com.joe.ibaby.dao.beans.Baby
 import com.joe.ibaby.dao.beans.BaseBean
 import com.joe.ibaby.dao.beans.BaseBean.DEFAULT_GENDER
-import com.joe.ibaby.dao.beans.PackageBean
 import com.joe.ibaby.dao.beans.User
+import com.joe.ibaby.dao.beans.Vaccine
 import com.joe.ibaby.dao.offline.OffLineDataLogic
 import com.joe.ibaby.helper.*
-import com.shundaojia.live.Live
 import com.soundcloud.android.crop.Crop
 import com.zhihu.matisse.Matisse
 import kotlinx.android.synthetic.main.activity_add_baby.*
@@ -34,15 +36,23 @@ import java.util.*
 
 class AddBabyActivity : BaseActivity() {
 
-    private val mUser = intent.getSerializableExtra(AppUtil.CURRENT_USER) as User
+    private lateinit var mUser: User
+    private lateinit var vaccineAdapter: AddBabyVaccineAdapter
 
     override fun setContentLayout(): Int {
         return R.layout.activity_add_baby
     }
 
     override fun initView() {
+        mUser = intent.getSerializableExtra(AppUtil.CURRENT_USER) as User
         setSupportActionBar(toolbar)
-        supportActionBar!!.title = mUser.nickName + " - " + "爱宝"
+
+        if (mUser.baby != null && mUser.baby.babyName != null) {
+            supportActionBar!!.title = mUser.nickName + " - " + mUser.baby.babyName
+        } else {
+            supportActionBar!!.title = mUser.nickName + " - " + "爱宝"
+        }
+
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         toolbar.setNavigationOnClickListener({ onBackPressed() })
 
@@ -62,25 +72,45 @@ class AddBabyActivity : BaseActivity() {
         btn_save_baby.setOnClickListener { saveBaby() }
         babyInfoViewState(true)
 
+        val layoutManager = LinearLayoutManager(this)
+        rcv_vaccine.layoutManager = layoutManager
+        vaccineAdapter = AddBabyVaccineAdapter(this)
+        rcv_vaccine.adapter = vaccineAdapter
+
     }
 
     private fun observeCtvEdit() {
         ctv_edit_baby.toggle()
+        showBabyInfo(mUser.baby)
         babyInfoViewState(ctv_edit_baby.isChecked)
     }
 
     override fun initData() {
-        RxObservable<PackageBean>().getObservableIo {
-            return@getObservableIo OffLineDataLogic.instance?.getBabyByIdInPkg(mUser!!.userId)
+//        RxObservable<PackageBean>().getObservableIo {
+//            return@getObservableIo OffLineDataLogic.instance?.getBabyByIdInPkg(mUser!!.userId)
+//        }
+//                .compose(Live.bindLifecycle(this))
+//                .subscribe {
+//                    if (it.isDataRight) {
+//                        ctv_edit_baby.visibility = View.VISIBLE
+//                        mUser!!.baby = it.obj as Baby?
+//                        showBabyInfo(it.obj as Baby)
+//                        babyInfoViewState(false)
+//                    }
+//                }
+
+        if (mUser.baby != null) {
+            ctv_edit_baby.visibility = View.VISIBLE
+            showBabyInfo(mUser.baby)
+            babyInfoViewState(false)
         }
-                .compose(Live.bindLifecycle(this))
-                .subscribe {
-                    if (it.isDataRight) {
-                        ctv_edit_baby.visibility = View.VISIBLE
-                        mUser!!.baby = it.obj as Baby?
-                        showBabyInfo(it.obj as Baby)
-                    }
-                }
+        val inputS = assets.open("vaccine_1")
+        val buffer = ByteArray(inputS.available())
+        inputS.read(buffer)
+        val vaccines = JSONArray.parseArray(String(buffer), Vaccine::class.java)
+        vaccineAdapter.addData(vaccines)
+        vaccineAdapter.addBaby(mUser.baby)
+
     }
 
 
@@ -118,25 +148,31 @@ class AddBabyActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
+        setResult(Activity.RESULT_OK)
         super.onBackPressed()
-        setResult(AppUtil.REQUEST_CODE_ADD_BABY)
     }
 
     private fun showDatePickDialog() {
         val ca = Calendar.getInstance()
-        val year = ca.get(Calendar.YEAR)
-        val month = ca.get(Calendar.MONTH)
-        val day = ca.get(Calendar.DAY_OF_MONTH)
+        val syear = ca.get(Calendar.YEAR)
+        val smonth = ca.get(Calendar.MONTH)
+        val sday = ca.get(Calendar.DAY_OF_MONTH)
         DatePickerDialog(this, object : DatePickerDialog.OnDateSetListener {
             override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
-                tv_birth.text = year.toString() + "-" + (month+1)+ "-" + day
+                val selectDate = year.toString() + "-" + (month+1)+ "-" + dayOfMonth
+                if (TimeUtils.getDateDif(selectDate) > -30) {
+                    tv_birth.text = selectDate
+                }
             }
-        }, year, month, day)
+        }, syear, smonth, sday)
                 .show()
     }
 
     private fun saveBaby() {
         val babyNickname = edit_baby_nickname.text.toString()
+        if (babyNickname.contains("(")) {
+
+        }
         val babyBirth = tv_birth.text.toString()
         var babyGender = DEFAULT_GENDER
         if (rg_gender.checkedRadioButtonId == R.id.rdbtn_girl) {
@@ -152,6 +188,7 @@ class AddBabyActivity : BaseActivity() {
             if (mUser.baby == null) {
                 val baby = Baby()
                 saveBaby2local(baby, babyNickname, babyBirth, babyGender)
+                mUser.baby = baby
                 baby.save(object : SaveListener<String>(){
                     override fun done(p0: String?, p1: BmobException?) {
                         CommonUtils.dismiss(dialog, mContext)
@@ -168,18 +205,17 @@ class AddBabyActivity : BaseActivity() {
                 })
             }else {
                 saveBaby2local(mUser.baby, babyNickname, babyBirth, babyGender)
-                if (!isBabyUpload()) {
+                if (isBabyUpload()) {
                     mUser.baby.update(mUser.baby.bmobObjId, object : UpdateListener() {
                         override fun done(p0: BmobException?) {
-                            CommonUtils.dismiss(dialog, mContext)
-                            TastyToastUtil.showOK("保存成功,开启疫苗提醒吧~")
+                            TastyToastUtil.showOK("保存成功,开启疫苗接种提醒吧~")
                             babyInfoViewState(false)
                         }
 
                     })
                 }
             }
-
+            CommonUtils.dismiss(dialog, mContext)
 
         }
 
@@ -188,7 +224,7 @@ class AddBabyActivity : BaseActivity() {
     /**
      * baby信息是否上传成功,返回bmobObjId
      */
-    private fun isBabyUpload() = mUser.baby.bmobObjId == null
+    private fun isBabyUpload() = mUser.baby.bmobObjId != null
 
     private fun saveBaby2local(baby: Baby, babyNickname: String, babyBirth: String, babyGender: Int) {
         baby.userId = mUser.userId
@@ -197,7 +233,7 @@ class AddBabyActivity : BaseActivity() {
         baby.age = AppUtil.getBabyAge(babyBirth)
         baby.gender = babyGender
         OffLineDataLogic.instance?.saveBaby(baby)
-        mUser.baby = baby
+        vaccineAdapter.addBaby(mUser.baby)
     }
 
     /**
@@ -219,9 +255,8 @@ class AddBabyActivity : BaseActivity() {
 
 
     private fun showBabyInfo(baby: Baby) {
-        supportActionBar!!.title = mUser.nickName + " - " + baby.babyName
         loadLocalBabyPic(baby)
-        edit_baby_nickname.setText(baby.babyName + " (" + baby.age + ")")
+        edit_baby_nickname.setText(baby.babyName)
         edit_baby_nickname.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 edit_baby_nickname.setText(baby.babyName)
@@ -233,11 +268,12 @@ class AddBabyActivity : BaseActivity() {
         }else {
             rdbtn_girl.isChecked = true
         }
-        babyInfoViewState(false)
     }
 
     private fun loadLocalBabyPic(baby: Baby) {
-        iv_baby?.setImageBitmap(BitmapFactory.decodeFile(AppUtil.getBabyPicPath(baby)))
+        if (FileUtils.isFileExist(AppUtil.getBabyPicPath(baby))) {
+            iv_baby?.setImageBitmap(BitmapFactory.decodeFile(AppUtil.getBabyPicPath(baby)))
+        }
     }
 
 }

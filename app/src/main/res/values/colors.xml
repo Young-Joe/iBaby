@@ -16,5 +16,6 @@
     <color name="bg_light_gray">#F2F4F5</color>
     <color name="txt_normal">#808080</color>
     <color name="div_list">#cdcdcd</color>
+    <color name="dash_line">#B0AEB0</color>
 
 </resources>

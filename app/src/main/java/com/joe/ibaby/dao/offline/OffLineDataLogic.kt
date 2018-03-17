@@ -39,7 +39,9 @@ class OffLineDataLogic private constructor(){
                 user.id = localUser.id
             }
             //bmob主键
-            user.bmobObjId = user.objectId
+            if (user.objectId != null) {
+                user.bmobObjId = user.objectId
+            }
             DbManager.daoSession.userDao.save(user)
         }catch (e: Exception) {
             TastyToastUtil.showInfo("保存异常")
@@ -68,7 +70,9 @@ class OffLineDataLogic private constructor(){
                 baby.id = localBaby.id
             }
             //bmob主键
-            baby.bmobObjId = baby.objectId
+            if (baby.objectId != null) {
+                baby.bmobObjId = baby.objectId
+            }
             DbManager.daoSession.babyDao.save(baby)
         }catch (e: Exception) {
             TastyToastUtil.showInfo("保存异常")

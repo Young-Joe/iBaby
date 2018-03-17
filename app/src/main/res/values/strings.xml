@@ -23,5 +23,9 @@
     <string name="toast_info_baby_nickname">哼!%s,你还没給人家起名儿呢~</string>
     <string name="toast_info_baby_birth">阿欧,%s,难道你忘了我的生日了么~</string>
 
+    <string name="txt_vaccine_warn">接种各类疫苗的禁忌原则\n
+        \t\t暂时禁忌:早产儿、难产儿，正在发热或患一般疾病的急性期儿童就属于“暂时禁忌”。这些宝宝可以在疾病康复后补种。\n
+        \t\t绝对禁忌:如果你的宝宝具有免疫功能缺陷、或是严重过敏体质，就属于“绝对禁忌”,接种疫苗可能发生异常反应，甚至危及生命，所以绝对不可接种疫苗。
+    </string>
 
 </resources>

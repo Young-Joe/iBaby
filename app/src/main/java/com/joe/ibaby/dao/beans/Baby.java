@@ -4,7 +4,6 @@ import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Transient;
-import org.greenrobot.greendao.annotation.Unique;
 
 import cn.bmob.v3.datatype.BmobFile;
 
@@ -18,7 +17,7 @@ public class Baby extends BaseBean {
     private Long id;
 
     //TODO 删除主键
-    @Unique
+//    @Unique
     private String userId;
     private String babyName;
     private String babyBirth;
@@ -26,15 +25,15 @@ public class Baby extends BaseBean {
     private String bmobObjId;
     //性别 1 男 2 女
     private int gender = DEFAULT_GENDER;
-    private String age = TEXT_EMPTY;
+    private int age;
 
     @Transient
     private BmobFile babyPic;
 
 
-    @Generated(hash = 150777722)
+    @Generated(hash = 333213477)
     public Baby(Long id, String userId, String babyName, String babyBirth,
-            String bmobObjId, int gender, String age) {
+            String bmobObjId, int gender, int age) {
         this.id = id;
         this.userId = userId;
         this.babyName = babyName;
@@ -87,19 +86,19 @@ public class Baby extends BaseBean {
         this.gender = gender;
     }
 
-    public String getAge() {
-        return age;
-    }
-
-    public void setAge(String age) {
-        this.age = age;
-    }
-
     public BmobFile getBabyPic() {
         return babyPic;
     }
 
     public void setBabyPic(BmobFile babyPic) {
         this.babyPic = babyPic;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 }

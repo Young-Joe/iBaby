@@ -21,5 +21,6 @@
     <dimen name="text_title_size">17sp</dimen>
     <dimen name="grid_expected_size">120dp</dimen>
     <dimen name="height_add_baby_item">40dp</dimen>
+    <dimen name="vertical_dash_line">2dp</dimen>
 
 </resources>
