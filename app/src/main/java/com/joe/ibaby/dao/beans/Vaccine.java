@@ -36,6 +36,11 @@ public class Vaccine extends BaseBean{
      */
     private String attention;
 
+    /**
+     * 价格
+     */
+    private String price;
+
     public String getVaccine() {
         return vaccine;
     }
@@ -90,5 +95,13 @@ public class Vaccine extends BaseBean{
 
     public void setAttention(String attention) {
         this.attention = attention;
+    }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public void setPrice(String price) {
+        this.price = price;
     }
 }

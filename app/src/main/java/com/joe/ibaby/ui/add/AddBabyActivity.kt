@@ -104,6 +104,7 @@ class AddBabyActivity : BaseActivity() {
             showBabyInfo(mUser.baby)
             babyInfoViewState(false)
         }
+
         val inputS = assets.open("vaccine_1")
         val buffer = ByteArray(inputS.available())
         inputS.read(buffer)
