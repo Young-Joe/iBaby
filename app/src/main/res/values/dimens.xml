@@ -4,14 +4,9 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <dimen name="text_logo_size">60sp</dimen>
-    <dimen name="text_big_size">30sp</dimen>
-    <dimen name="text_large2_size">25sp</dimen>
-    <dimen name="text_large_size">20sp</dimen>
-    <dimen name="text_normal_size">18sp</dimen>
     <dimen name="text_small_size">16sp</dimen>
     <dimen name="text_default_size">15sp</dimen>
     <dimen name="text_mini_size">14sp</dimen>
-    <dimen name="text_minmini_size">12sp</dimen>
     <dimen name="nav_header_vertical_spacing">8dp</dimen>
     <dimen name="nav_header_height">176dp</dimen>
     <dimen name="fab_margin">16dp</dimen>

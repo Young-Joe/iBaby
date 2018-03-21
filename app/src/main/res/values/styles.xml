@@ -10,10 +10,6 @@
     </style>
 
     <!--&lt;!&ndash; 设置FlashActivity主题避免白屏 &ndash;&gt;-->
-    <style name="Theme.BackgroundTranslucent" parent="Theme.FullScreen">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-    </style>
 
     <style name="Theme.FullScreen" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowNoTitle">true</item>

@@ -48,6 +48,7 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'org.greenrobot:greendao:3.2.2'
     implementation rootProject.ext.designCompat
+    implementation rootProject.ext.cardView
     implementation project(':customlibrary')
     compile 'com.sdsmdg.tastytoast:tastytoast:0.1.1'
     compile 'com.alibaba:fastjson:1.2.33'

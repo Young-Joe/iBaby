@@ -11,8 +11,6 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">Settings</string>
-
     <string name="hint_register_userid">登录账号</string>
     <string name="hint_register_nickname">用户昵称</string>
     <string name="hint_register_pswd">登录密码</string>

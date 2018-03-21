@@ -6,16 +6,12 @@
 
     <color name="translate">#00000000</color>
     <color name="white">#ffffff</color>
-    <color name="green">#33CC99</color>
     <color name="gray">#606060</color>
-    <color name="light_gray">#A9A9A9</color>
-    <color name="red">#ff0000</color>
     <color name="black">#000000</color>
     <color name="light_black">#2c2c2c</color>
 
     <color name="bg_light_gray">#F2F4F5</color>
     <color name="txt_normal">#808080</color>
-    <color name="div_list">#cdcdcd</color>
     <color name="dash_line">#B0AEB0</color>
 
 </resources>

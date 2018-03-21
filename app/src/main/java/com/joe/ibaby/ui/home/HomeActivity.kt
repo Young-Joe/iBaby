@@ -5,11 +5,14 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.support.design.widget.NavigationView
-import android.support.design.widget.Snackbar
+import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import cn.bmob.v3.datatype.BmobFile
 import cn.bmob.v3.exception.BmobException
@@ -25,6 +28,7 @@ import com.joe.customlibrary.view.CircleImageView
 import com.joe.ibaby.MainApplication
 import com.joe.ibaby.R
 import com.joe.ibaby.base.BaseActivity
+import com.joe.ibaby.base.BaseLazyFragment
 import com.joe.ibaby.dao.beans.Baby
 import com.joe.ibaby.dao.beans.BaseBean
 import com.joe.ibaby.dao.beans.PackageBean
@@ -50,6 +54,8 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private var mTvNickname: TextView? = null
     private var mTvBaby: TextView? = null
 
+    private val mFragments: ArrayList<BaseLazyFragment> = ArrayList()
+
     private var mUser: User? = null
 
     override fun setContentLayout(): Int {
@@ -60,11 +66,6 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         setSupportActionBar(toolbar)
         SystemBarHelper.tintStatusBarForDrawer(this, drawer_layout, ResourceUtil.getColor(R.color.colorPrimary), 0F)
         SystemBarHelper.setPadding(this, nav_view.getHeaderView(0))
-
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }
 
         val toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
@@ -85,7 +86,15 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     override fun initData() {
         initUserInfoView()
         initUserInfo()
-        
+
+        mFragments.add(Vaccine1Fragment())
+        mFragments.add(Vaccine2Fragment())
+
+        val pagerAdapter = PagerAdapter(supportFragmentManager)
+//        viewpager.adapter = pagerAdapter
+//        tabs.tabMode = TabLayout.MODE_FIXED
+//        tabs.setupWithViewPager(viewpager)
+
     }
 
     fun initUserInfo() {
@@ -139,12 +148,12 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         mTvNickname?.visibility = if (isShow) { View.VISIBLE } else { View.GONE }
         mTvBaby?.visibility = if (isShow) { View.VISIBLE } else { View.GONE }
-        mTvBaby?.setText("Baby : 您还没有添加宝宝哟~")
+        mTvBaby?.text = "Baby : 您还没有添加宝宝哟~"
     }
 
 
     private fun showBabyInfoView(baby: Baby?) {
-        mTvBaby?.setText("Baby : " + baby?.babyName + " " + AppUtil.getBabyAgeInfo(baby?.babyBirth))
+        mTvBaby?.text = "Baby : " + baby?.babyName + " " + AppUtil.getBabyAgeInfo(baby?.babyBirth)
 
     }
 
@@ -250,6 +259,35 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun isUserLogin(): Boolean {
         return mUser != null
+    }
+
+
+    internal inner class PagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
+
+        override fun setPrimaryItem(container: ViewGroup?, position: Int, `object`: Any) {
+            super.setPrimaryItem(container, position, `object`)
+        }
+
+        override fun destroyItem(container: ViewGroup?, position: Int, `object`: Any?) {
+            super.destroyItem(container, position, `object`)
+        }
+
+        override fun getItem(position: Int): Fragment {
+            return mFragments[position]
+        }
+
+        override fun getCount(): Int {
+            return if (CommonUtils.isListEmpty(mFragments)) 0 else mFragments.size
+        }
+
+        override fun getPageTitle(position: Int): CharSequence {
+            if (position == 0) {
+                return "一类疫苗"
+            }else {
+                return "二类疫苗"
+            }
+        }
+
     }
 
 }
