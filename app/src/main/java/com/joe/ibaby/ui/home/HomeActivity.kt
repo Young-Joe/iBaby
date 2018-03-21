@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.support.design.widget.NavigationView
+import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
@@ -44,6 +45,7 @@ import com.soundcloud.android.crop.Crop
 import com.zhihu.matisse.Matisse
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
+import kotlinx.android.synthetic.main.content_home.*
 import java.io.File
 
 class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -91,9 +93,9 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         mFragments.add(Vaccine2Fragment())
 
         val pagerAdapter = PagerAdapter(supportFragmentManager)
-//        viewpager.adapter = pagerAdapter
-//        tabs.tabMode = TabLayout.MODE_FIXED
-//        tabs.setupWithViewPager(viewpager)
+        viewpager.adapter = pagerAdapter
+        tabs.tabMode = TabLayout.MODE_FIXED
+        tabs.setupWithViewPager(viewpager)
 
     }
 
