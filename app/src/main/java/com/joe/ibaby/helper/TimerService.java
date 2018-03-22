@@ -17,12 +17,24 @@ import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.joe.customlibrary.common.CommonUtils;
+import com.joe.customlibrary.rxjava.RxCallable;
+import com.joe.customlibrary.rxjava.RxObservable;
+import com.joe.customlibrary.utils.FileUtils;
 import com.joe.customlibrary.utils.TimeUtils;
 import com.joe.ibaby.R;
+import com.joe.ibaby.dao.beans.Baby;
+import com.joe.ibaby.dao.beans.PackageBean;
+import com.joe.ibaby.dao.beans.Vaccine;
+import com.joe.ibaby.dao.offline.OffLineDataLogic;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
+import io.reactivex.functions.Consumer;
 
 /**
  * 病人数据同步服务。网络变化时、登录成功时启动
@@ -31,7 +43,7 @@ import java.util.Calendar;
 public class TimerService extends Service {
 
 	// 15分钟同步一次
-	private static long RESTART_FREQUENCY = 1000 * 5;
+	private static long RESTART_FREQUENCY = 1000 * 60;
 
 	/**
 	 * 移动网络同步时间为 60分
@@ -52,50 +64,92 @@ public class TimerService extends Service {
 	public void onCreate() {
 		Log.e("Joe--->", "TimerService : " + TimeUtils.getCurrentTime());
 
+		String currentUserId = PreferenceUtil.INSTANCE.getField(PreferenceUtil.INSTANCE.getCURRENT_USER());
+		if (CommonUtils.isTextEmpty(currentUserId)) {
+			stopService();
+		}else {
+			new RxObservable<PackageBean>()
+					.getObservableIo(new RxCallable<PackageBean>() {
+						@Override
+						public PackageBean call() throws Exception {
+							return OffLineDataLogic.Companion.getInstance().getBabyByIdInPkg(currentUserId);
+						}
+					})
+					.subscribe(new Consumer<PackageBean>() {
+						@Override
+						public void accept(PackageBean packageBean) throws Exception {
+							if (packageBean.isDataRight()) {
+								calculateBabyVaccine((Baby)packageBean.getObj());
+							}else {
+								stopService();
+							}
+						}
+					});
+		}
+
+
 		initRestartTime();
-		//TODO intentService
 		stopServiceAndRestart();
 
-		sendNotification();
 	}
 
+	private void calculateBabyVaccine(Baby baby) {
+		List<Vaccine> vaccines = VaccineUtil.INSTANCE.getVaccine1(getApplicationContext());
+		List<Vaccine> warnVaccines = new ArrayList<>();
+		int babyAge2Day = AppUtil.INSTANCE.getBabyAge(baby.getBabyBirth());
+		for (int i = 0; i < vaccines.size(); i++) {
+			if (babyAge2Day <= vaccines.get(i).getAge2day()) {
+				warnVaccines.add(vaccines.get(i));
+				//每个年龄段最多同时两个疫苗
+				if (i < vaccines.size() -1) {
+					if (vaccines.get(i).getAge2day() == vaccines.get(i + 1).getAge2day()) {
+						warnVaccines.add(vaccines.get(i + 1));
+						break;
+					}
+				}
+
+				break;
+			}
+		}
+
+		for (int i = 0; i < warnVaccines.size() ; i++) {
+			sendNotification(baby, warnVaccines.get(i), i);
+		}
+
+	}
+
+
 	/**
-	 *
+	 *  @param baby
+	 * @param vaccine
+	 * @param i
 	 */
-	private void sendNotification() {
+	private void sendNotification(Baby baby, Vaccine vaccine, int i) {
 		//获取NotificationManager实例
 		NotificationManager notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		//实例化NotificationCompat.Builde并设置相关属性
-//		NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-//				//设置小图标
-//				.setSmallIcon(R.mipmap.ic_launcher)
-//				//设置通知标题
-//				.setContentTitle("最简单的Notification")
-//				//设置通知内容
-//				.setContentText("只有小图标、标题、内容")
-//				.setDefaults(Notification.DEFAULT_ALL)
-//				.setOngoing(true)
-//				.setAutoCancel(true);
-//		//设置通知时间，默认为系统发出通知的时间，通常不用设置
-//		//.setWhen(System.currentTimeMillis());
-//		//通过builder.build()方法生成Notification对象,并发送通知,id=1
-//		notifyManager.notify(1, builder.build());
-
+		String title = vaccine.getVaccine();
+		if (!CommonUtils.isTextEmpty(vaccine.getTimes())) {
+			title = title + "(" + vaccine.getTimes() + ")";
+		}
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-		NotificationCompat.BigPictureStyle bigPictureStyle = new NotificationCompat.BigPictureStyle();
-		bigPictureStyle.setBigContentTitle("Title");
-		bigPictureStyle.setSummaryText("SummaryText");
-		Bitmap bigPicture = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-		bigPictureStyle.bigPicture(bigPicture);
-		bigPictureStyle.bigLargeIcon(bigPicture);
-		builder.setSmallIcon(R.mipmap.ic_launcher)
-				.setTicker("PicNotification")
-				.setContentTitle("最简单的Notification")
-				.setContentText("只有小图标、标题、内容")
-				.setStyle(bigPictureStyle)
+		builder.setSmallIcon(R.mipmap.ic_notification_vaccine)
+				.setTicker("老爹,该给您的" + baby.getBabyName() + "接种疫苗啦~")
+				.setContentTitle(title)
+				.setContentText(vaccine.getInfo())
 				.setAutoCancel(true)
 				.setDefaults(Notification.DEFAULT_ALL);
-		notifyManager.notify(1, builder.build());
+		if (FileUtils.isFileExist(AppUtil.INSTANCE.getBabyPicPath(baby))) {
+			NotificationCompat.BigPictureStyle bigPictureStyle = new NotificationCompat.BigPictureStyle();
+			bigPictureStyle.setBigContentTitle(title);
+			bigPictureStyle.setSummaryText(vaccine.getInfo());
+			Bitmap bigPicture = BitmapFactory.decodeFile(AppUtil.INSTANCE.getBabyPicPath(baby));
+			bigPictureStyle.bigPicture(bigPicture);
+			builder.setStyle(bigPictureStyle);
+		}
+
+		notifyManager.notify(baby.getAge() + i, builder.build());
+
 	}
 
 

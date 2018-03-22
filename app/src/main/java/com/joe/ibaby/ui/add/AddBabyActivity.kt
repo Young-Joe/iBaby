@@ -13,7 +13,6 @@ import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.SaveListener
 import cn.bmob.v3.listener.UpdateListener
 import cn.bmob.v3.listener.UploadFileListener
-import com.alibaba.fastjson.JSONArray
 import com.joe.customlibrary.common.CommonUtils
 import com.joe.customlibrary.common.SystemBarHelper
 import com.joe.customlibrary.utils.FileUtils
@@ -25,7 +24,6 @@ import com.joe.ibaby.dao.beans.Baby
 import com.joe.ibaby.dao.beans.BaseBean
 import com.joe.ibaby.dao.beans.BaseBean.DEFAULT_GENDER
 import com.joe.ibaby.dao.beans.User
-import com.joe.ibaby.dao.beans.Vaccine
 import com.joe.ibaby.dao.offline.OffLineDataLogic
 import com.joe.ibaby.helper.*
 import com.soundcloud.android.crop.Crop
@@ -86,18 +84,6 @@ class AddBabyActivity : BaseActivity() {
     }
 
     override fun initData() {
-//        RxObservable<PackageBean>().getObservableIo {
-//            return@getObservableIo OffLineDataLogic.instance?.getBabyByIdInPkg(mUser!!.userId)
-//        }
-//                .compose(Live.bindLifecycle(this))
-//                .subscribe {
-//                    if (it.isDataRight) {
-//                        ctv_edit_baby.visibility = View.VISIBLE
-//                        mUser!!.baby = it.obj as Baby?
-//                        showBabyInfo(it.obj as Baby)
-//                        babyInfoViewState(false)
-//                    }
-//                }
 
         if (mUser.baby != null) {
             ctv_edit_baby.visibility = View.VISIBLE
@@ -105,11 +91,7 @@ class AddBabyActivity : BaseActivity() {
             babyInfoViewState(false)
         }
 
-        val inputS = assets.open("vaccine_1")
-        val buffer = ByteArray(inputS.available())
-        inputS.read(buffer)
-        val vaccines = JSONArray.parseArray(String(buffer), Vaccine::class.java)
-        vaccineAdapter.addData(vaccines)
+        vaccineAdapter.addData(VaccineUtil.getVaccine1(mContext!!))
         vaccineAdapter.addBaby(mUser.baby)
 
     }

@@ -97,6 +97,7 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         tabs.tabMode = TabLayout.MODE_FIXED
         tabs.setupWithViewPager(viewpager)
 
+        startService(Intent(mContext, TimerService::class.java))
     }
 
     fun initUserInfo() {
@@ -156,7 +157,6 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun showBabyInfoView(baby: Baby?) {
         mTvBaby?.text = "Baby : " + baby?.babyName + " " + AppUtil.getBabyAgeInfo(baby?.babyBirth)
-
     }
 
     override fun onBackPressed() {
@@ -166,19 +166,6 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             super.onBackPressed()
         }
     }
-
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        menuInflater.inflate(R.menu.home, menu)
-//        return true
-//    }
-//
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        when (item.itemId) {
-//            R.id.action_settings -> return true
-//            else -> return super.onOptionsItemSelected(item)
-//        }
-//    }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -196,12 +183,20 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     TastyToastUtil.showInfo("哼!你还没登录呢")
                 }
             }
+            R.id.nav_alert -> {
+                if (isUserLogin()) {
+                    if (mUser?.baby != null) {
+                        DialogUtil.showAlertDialog(mContext!!, mUser!!.baby)
+                    }else {
+                        TastyToastUtil.showInfo("哼!你还添加宝宝呢")
+                    }
+                } else {
+                    TastyToastUtil.showInfo("哼!你还没登录呢")
+                }
+            }
             R.id.nav_logout -> {
                 PreferenceUtil.saveField(PreferenceUtil.CURRENT_USER, BaseBean.TEXT_EMPTY)
                 initUserInfo()
-            }
-            R.id.nav_manage -> {
-
             }
             R.id.nav_share -> {
 
