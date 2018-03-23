@@ -58,7 +58,8 @@ abstract class BaseActivity : AppCompatActivity() {
                     }
                 },
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_PHONE_STATE
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.WAKE_LOCK
         )
     }
 

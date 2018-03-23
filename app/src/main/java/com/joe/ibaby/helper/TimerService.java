@@ -25,8 +25,10 @@ import com.joe.customlibrary.utils.TimeUtils;
 import com.joe.ibaby.R;
 import com.joe.ibaby.dao.beans.Baby;
 import com.joe.ibaby.dao.beans.PackageBean;
+import com.joe.ibaby.dao.beans.User;
 import com.joe.ibaby.dao.beans.Vaccine;
 import com.joe.ibaby.dao.offline.OffLineDataLogic;
+import com.joe.ibaby.ui.add.AddBabyActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -72,14 +74,14 @@ public class TimerService extends Service {
 					.getObservableIo(new RxCallable<PackageBean>() {
 						@Override
 						public PackageBean call() throws Exception {
-							return OffLineDataLogic.Companion.getInstance().getBabyByIdInPkg(currentUserId);
+							return OffLineDataLogic.Companion.getInstance().getUserByIdInPkg(currentUserId);
 						}
 					})
 					.subscribe(new Consumer<PackageBean>() {
 						@Override
 						public void accept(PackageBean packageBean) throws Exception {
-							if (packageBean.isDataRight()) {
-								calculateBabyVaccine((Baby)packageBean.getObj());
+							if (packageBean.isDataRight() && ((User)packageBean.getObj()).getBaby() != null) {
+								calculateBabyVaccine((User)packageBean.getObj());
 							}else {
 								stopService();
 							}
@@ -93,12 +95,13 @@ public class TimerService extends Service {
 
 	}
 
-	private void calculateBabyVaccine(Baby baby) {
+	private void calculateBabyVaccine(User user) {
 		List<Vaccine> vaccines = VaccineUtil.INSTANCE.getVaccine1(getApplicationContext());
 		List<Vaccine> warnVaccines = new ArrayList<>();
-		int babyAge2Day = AppUtil.INSTANCE.getBabyAge(baby.getBabyBirth());
+		int babyAge2Day = AppUtil.INSTANCE.getBabyAge(user.getBaby().getBabyBirth());
 		for (int i = 0; i < vaccines.size(); i++) {
-			if (babyAge2Day <= vaccines.get(i).getAge2day()) {
+			//提前3天左右提醒
+			if (babyAge2Day <= vaccines.get(i).getAge2day() && babyAge2Day >= vaccines.get(i).getAge2day() - 3) {
 				warnVaccines.add(vaccines.get(i));
 				//每个年龄段最多同时两个疫苗
 				if (i < vaccines.size() -1) {
@@ -113,31 +116,43 @@ public class TimerService extends Service {
 		}
 
 		for (int i = 0; i < warnVaccines.size() ; i++) {
-			sendNotification(baby, warnVaccines.get(i), i);
+			sendNotification(user, warnVaccines.get(i), i);
 		}
 
 	}
 
 
 	/**
-	 *  @param baby
+	 * @param user
 	 * @param vaccine
 	 * @param i
 	 */
-	private void sendNotification(Baby baby, Vaccine vaccine, int i) {
+	private void sendNotification(User user, Vaccine vaccine, int i) {
+		Baby baby = user.getBaby();
+		String userGender = "";
+		if (user.getGender() == 1) {
+			userGender = "老爹";
+		}else {
+			userGender = "老妈";
+		}
+
 		//获取NotificationManager实例
 		NotificationManager notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		//实例化NotificationCompat.Builde并设置相关属性
-		String title = vaccine.getVaccine();
+		String title = baby.getBabyName() + "需要接种" +vaccine.getVaccine() + "啦~";
 		if (!CommonUtils.isTextEmpty(vaccine.getTimes())) {
 			title = title + "(" + vaccine.getTimes() + ")";
 		}
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-		builder.setSmallIcon(R.mipmap.ic_notification_vaccine)
-				.setTicker("老爹,该给您的" + baby.getBabyName() + "接种疫苗啦~")
+		builder.setPriority(NotificationManager.IMPORTANCE_MAX)
+				.setCategory(Notification.CATEGORY_SYSTEM)
+				.setVisibility(Notification.VISIBILITY_PUBLIC)
+				.setSmallIcon(R.mipmap.ic_notification_vaccine)
+				.setTicker(userGender + ",该给您的" + baby.getBabyName() + "接种疫苗啦~")
 				.setContentTitle(title)
 				.setContentText(vaccine.getInfo())
 				.setAutoCancel(true)
+				.setShowWhen(false)
 				.setDefaults(Notification.DEFAULT_ALL);
 		if (FileUtils.isFileExist(AppUtil.INSTANCE.getBabyPicPath(baby))) {
 			NotificationCompat.BigPictureStyle bigPictureStyle = new NotificationCompat.BigPictureStyle();
@@ -147,9 +162,11 @@ public class TimerService extends Service {
 			bigPictureStyle.bigPicture(bigPicture);
 			builder.setStyle(bigPictureStyle);
 		}
-
+		Intent intent = new Intent(this, AddBabyActivity.class);
+		intent.putExtra(AppUtil.INSTANCE.getCURRENT_USER(), user);
+		PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+		builder.setContentIntent(pendingIntent);
 		notifyManager.notify(baby.getAge() + i, builder.build());
-
 	}
 
 

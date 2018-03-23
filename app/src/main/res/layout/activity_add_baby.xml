@@ -40,11 +40,12 @@
     </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.widget.NestedScrollView
+        android:id="@+id/nested_scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -168,15 +169,37 @@
                     android:text="保存宝宝信息"/>
             </LinearLayout>
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/height_add_baby_item"
-                android:text="疫苗接种"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:gravity="center_vertical"
-                android:textColor="@color/light_black"
-                android:textSize="@dimen/text_title_size"/>
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="疫苗接种"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:textColor="@color/light_black"
+                    android:textSize="@dimen/text_title_size"/>
+
+                <TextView
+                    android:id="@+id/tv_alert"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="@drawable/bg_edit_selector"
+                    android:textColor="@color/txt_edit_selector"
+                    android:textSize="@dimen/text_mini_size"
+                    android:checked="false"
+                    android:paddingLeft="5dp"
+                    android:paddingRight="5dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:text="提醒"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
 
             <TextView
                 style="@style/DivList"/>

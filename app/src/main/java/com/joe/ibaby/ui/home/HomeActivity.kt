@@ -19,6 +19,7 @@ import cn.bmob.v3.datatype.BmobFile
 import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.UpdateListener
 import cn.bmob.v3.listener.UploadFileListener
+import cn.bmob.v3.update.BmobUpdateAgent
 import com.jakewharton.rxbinding2.view.RxView
 import com.joe.customlibrary.common.CommonUtils
 import com.joe.customlibrary.common.SystemBarHelper
@@ -40,6 +41,7 @@ import com.joe.ibaby.helper.AppUtil.REQUEST_CODE_CHOOSE
 import com.joe.ibaby.helper.AppUtil.REQUEST_CODE_LOGIN
 import com.joe.ibaby.ui.add.AddBabyActivity
 import com.joe.ibaby.ui.login.LoginActivity
+import com.joe.ibaby.ui.more.MoreActivity
 import com.shundaojia.live.Live
 import com.soundcloud.android.crop.Crop
 import com.zhihu.matisse.Matisse
@@ -97,6 +99,7 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         tabs.tabMode = TabLayout.MODE_FIXED
         tabs.setupWithViewPager(viewpager)
 
+        BmobUpdateAgent.update(this)
         startService(Intent(mContext, TimerService::class.java))
     }
 
@@ -199,10 +202,15 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 initUserInfo()
             }
             R.id.nav_share -> {
-
+                if (isUserLogin() && mUser!!.baby != null &&
+                        FileUtils.isFileExist(AppUtil.getBabyPicPath(mUser!!.baby))) {
+                    ShareUtil.shareImg(mContext!!, mUser!!.baby)
+                }else {
+                    ShareUtil.shareTxt(mContext!!)
+                }
             }
             R.id.nav_send -> {
-
+                startActivity(Intent(mContext, MoreActivity::class.java))
             }
         }
 

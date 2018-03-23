@@ -69,6 +69,7 @@ class AddBabyActivity : BaseActivity() {
         tv_birth.setOnClickListener { showDatePickDialog() }
         btn_save_baby.setOnClickListener { saveBaby() }
         babyInfoViewState(true)
+        tv_alert.setOnClickListener { showAlertDialog() }
 
         val layoutManager = LinearLayoutManager(this)
         rcv_vaccine.layoutManager = layoutManager
@@ -236,8 +237,8 @@ class AddBabyActivity : BaseActivity() {
         }
     }
 
-
     private fun showBabyInfo(baby: Baby) {
+        tv_alert.visibility = View.VISIBLE
         loadLocalBabyPic(baby)
         edit_baby_nickname.setText(baby.babyName)
         edit_baby_nickname.setOnFocusChangeListener { v, hasFocus ->
@@ -256,6 +257,14 @@ class AddBabyActivity : BaseActivity() {
     private fun loadLocalBabyPic(baby: Baby) {
         if (FileUtils.isFileExist(AppUtil.getBabyPicPath(baby))) {
             iv_baby?.setImageBitmap(BitmapFactory.decodeFile(AppUtil.getBabyPicPath(baby)))
+        }
+    }
+
+    private fun showAlertDialog() {
+        if (mUser.baby == null) {
+            TastyToastUtil.showInfo("哼!你还没添加宝宝呢~")
+        }else {
+            DialogUtil.showAlertDialog(mContext!!, mUser.baby)
         }
     }
 

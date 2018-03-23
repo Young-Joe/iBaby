@@ -19,6 +19,7 @@ public class MainApplication extends BaseApplication {
 
         Bmob.initialize(this, "b8cc25a7a37d76437da7c365b539d352", "bmob");
 
+
     }
 
     public static String getCurrentUserId() {

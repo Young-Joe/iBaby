@@ -55,6 +55,9 @@ class OffLineDataLogic private constructor(){
             user = DbManager.daoSession.userDao.queryBuilder()
                     .where(UserDao.Properties.UserId.eq(userId))
                     .unique()
+            if(user != null){
+                user.baby = getBabyById(user.userId)
+            }
         }catch (e: Exception) {
             TastyToastUtil.showInfo("查询异常")
         }finally {
@@ -102,6 +105,7 @@ class OffLineDataLogic private constructor(){
                     .where(UserDao.Properties.UserId.eq(userId))
                     .unique()
             if (user != null) {
+                user.baby = getBabyById(userId)
                 packageBean.obj = user
                 packageBean.setDataRight()
             }
