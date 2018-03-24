@@ -37,7 +37,7 @@ Library Module 直接引用在用的依赖
 
 ##### 截图
 
-<img src="https://ws3.sinaimg.cn/large/006tNc79ly1fpo1zfkfmzj30u01hck2s.jpg" style="zoom:60">
+<img src="https://ws3.sinaimg.cn/large/006tNc79ly1fpo1zfkfmzj30u01hck2s.jpg" style="zoom:60%">
 
 <img src="https://ws3.sinaimg.cn/large/006tNc79ly1fpo2izpk6lj30u01hc77m.jpg" style="zoom:60" />
 
