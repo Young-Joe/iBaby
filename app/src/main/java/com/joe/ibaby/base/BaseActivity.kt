@@ -21,7 +21,7 @@ import com.joe.ibaby.ui.home.HomeActivity
 abstract class BaseActivity : AppCompatActivity() {
 
     var mContext: Context? = null
-    private var mHelper: PermissionHelper? = null
+    var mHelper: PermissionHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         mContext = this
@@ -48,10 +48,9 @@ abstract class BaseActivity : AppCompatActivity() {
 
     private fun checkPermission() {
         mHelper = PermissionHelper(this)
-        mHelper?.requestPermissions("请授予iBaby[读写]权限！",
+        mHelper?.requestPermissions("请授予iBaby相关权限！",
                 object : PermissionHelper.PermissionListener {
-                    override fun doAfterGrand(vararg permission: String) {
-                    }
+                    override fun doAfterGrand(vararg permission: String) {}
 
                     override fun doAfterDenied(vararg permission: String) {
                         ToastUtil.showToast("权限缺少可能会影响使用!")

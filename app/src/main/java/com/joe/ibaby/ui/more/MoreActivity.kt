@@ -17,7 +17,6 @@ class MoreActivity : BaseActivity() {
         webview!!.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
-                Log.e("Joe--->", newProgress.toString())
                 progressBar.progress = newProgress
                 if(newProgress == 100) {
                     progressBar.visibility = View.GONE

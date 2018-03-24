@@ -26,7 +26,7 @@ public class AnimLineEditText extends android.support.v7.widget.AppCompatEditTex
      * 字体到划线之间的距离
      */
     private final int LINE2BOTTOM_WIDTH = 6;
-    private final int ANIM_DURATION = 500;
+    private final int ANIM_DURATION = 800;
 
     private int normalColor = ResourceUtil.INSTANCE.getColor(R.color.txt_normal);
     private int pressColor = ResourceUtil.INSTANCE.getColor(R.color.colorPrimary);

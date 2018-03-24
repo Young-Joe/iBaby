@@ -189,7 +189,7 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             R.id.nav_alert -> {
                 if (isUserLogin()) {
                     if (mUser?.baby != null) {
-                        DialogUtil.showAlertDialog(mContext!!, mUser!!.baby)
+                        DialogUtil.showAlertDialog(mContext!!, mHelper!!)
                     }else {
                         TastyToastUtil.showInfo("哼!你还添加宝宝呢")
                     }
@@ -211,6 +211,9 @@ class HomeActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
             R.id.nav_send -> {
                 startActivity(Intent(mContext, MoreActivity::class.java))
+            }
+            R.id.nav_notice -> {
+                DialogUtil.showNoticeDialog(mContext!!)
             }
         }
 

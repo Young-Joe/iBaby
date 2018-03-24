@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tv_logo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:textColor="@color/txt_normal"
+        android:text="@string/app_name"
+        android:textSize="@dimen/text_logo_size"
+        android:textStyle="italic"
+        android:gravity="center"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/txt_normal"
+        android:gravity="center"
+        android:text="再也不必担心忘记給宝宝接种疫苗啦~"
+        android:textSize="@dimen/text_title_size"
+        android:textStyle="italic"/>
+
+</LinearLayout>

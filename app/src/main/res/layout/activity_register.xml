@@ -27,19 +27,14 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <TextView
-        android:id="@+id/tv_logo"
+    <include
+        android:id="@+id/include_logo"
+        layout="@layout/layout_logo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@+id/layout_appbar"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:padding="10dp"
-        android:textColor="@color/txt_normal"
-        android:text="@string/app_name"
-        android:textSize="@dimen/text_logo_size"
-        android:textStyle="italic"
-        android:gravity="center"/>
+        app:layout_constraintRight_toRightOf="parent" />
 
     <LinearLayout
         android:id="@+id/email_login_form"
@@ -48,8 +43,9 @@
         android:orientation="vertical"
         android:paddingLeft="25dp"
         android:paddingRight="25dp"
+        android:paddingTop="20dp"
         android:animateLayoutChanges="true"
-        app:layout_constraintTop_toBottomOf="@+id/tv_logo">
+        app:layout_constraintTop_toBottomOf="@+id/include_logo">
 
         <com.joe.ibaby.view.AnimLineEditText
             android:id="@+id/edit_register_userid"

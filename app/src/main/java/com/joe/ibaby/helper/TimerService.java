@@ -15,13 +15,12 @@ import android.os.Parcel;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.joe.customlibrary.common.CommonUtils;
 import com.joe.customlibrary.rxjava.RxCallable;
 import com.joe.customlibrary.rxjava.RxObservable;
+import com.joe.customlibrary.utils.CalendarReminderUtil;
 import com.joe.customlibrary.utils.FileUtils;
-import com.joe.customlibrary.utils.TimeUtils;
 import com.joe.ibaby.R;
 import com.joe.ibaby.dao.beans.Baby;
 import com.joe.ibaby.dao.beans.PackageBean;
@@ -34,6 +33,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import io.reactivex.functions.Consumer;
@@ -45,27 +45,14 @@ import io.reactivex.functions.Consumer;
 public class TimerService extends Service {
 
 	// 15分钟同步一次
-	private static long RESTART_FREQUENCY = 1000 * 60;
+	private static long RESTART_FREQUENCY = 1000 * 60 * 60 * 12;
 
-	/**
-	 * 移动网络同步时间为 60分
-	 * 无线网络同步时间为 2分
-	 */
-	private void initRestartTime(){
-//		int netState = CommonUtils.getNetworkState(getApplicationContext());
-//		if(netState == ConnectivityManager.TYPE_MOBILE){
-//			RESTART_FREQUENCY = 1000 * 60 * 60;
-//		}else if(netState == ConnectivityManager.TYPE_WIFI){
-//			RESTART_FREQUENCY = 1000 * 60 * 1;
-//		}else {
-//			stopService();
-//		}
+	private void setRestartTime(int hour) {
+		RESTART_FREQUENCY = 1000 * 60 * 60 * hour;
 	}
 
 	@Override
 	public void onCreate() {
-		Log.e("Joe--->", "TimerService : " + TimeUtils.getCurrentTime());
-
 		String currentUserId = PreferenceUtil.INSTANCE.getField(PreferenceUtil.INSTANCE.getCURRENT_USER());
 		if (CommonUtils.isTextEmpty(currentUserId)) {
 			stopService();
@@ -89,38 +76,65 @@ public class TimerService extends Service {
 					});
 		}
 
-
-		initRestartTime();
-		stopServiceAndRestart();
-
 	}
 
 	private void calculateBabyVaccine(User user) {
 		List<Vaccine> vaccines = VaccineUtil.INSTANCE.getVaccine1(getApplicationContext());
+		//通知提醒 三天前左右
 		List<Vaccine> warnVaccines = new ArrayList<>();
+		//行程提醒
+		List<Vaccine> calendarVaccines = new ArrayList<>();
+
 		int babyAge2Day = AppUtil.INSTANCE.getBabyAge(user.getBaby().getBabyBirth());
 		for (int i = 0; i < vaccines.size(); i++) {
-			//提前3天左右提醒
-			if (babyAge2Day <= vaccines.get(i).getAge2day() && babyAge2Day >= vaccines.get(i).getAge2day() - 3) {
-				warnVaccines.add(vaccines.get(i));
+			if (babyAge2Day <= vaccines.get(i).getAge2day()) {
+				//提前3天左右提醒
+				if (babyAge2Day >= vaccines.get(i).getAge2day() - 3) {
+					warnVaccines.add(vaccines.get(i));
+					//每个年龄段最多同时两个疫苗
+					if (i < vaccines.size() - 1) {
+						if (vaccines.get(i).getAge2day() == vaccines.get(i + 1).getAge2day()) {
+							warnVaccines.add(vaccines.get(i + 1));
+							break;
+						}
+					}
+					break;
+				}
+
+				//warnVaccines 不为空时已终止循环,再外层給calendarVaccines赋值
+				calendarVaccines.add(vaccines.get(i));
 				//每个年龄段最多同时两个疫苗
-				if (i < vaccines.size() -1) {
+				if (i < vaccines.size() - 1) {
 					if (vaccines.get(i).getAge2day() == vaccines.get(i + 1).getAge2day()) {
-						warnVaccines.add(vaccines.get(i + 1));
+						calendarVaccines.add(vaccines.get(i + 1));
 						break;
 					}
 				}
-
 				break;
 			}
 		}
 
+		//遍历通知
 		for (int i = 0; i < warnVaccines.size() ; i++) {
 			sendNotification(user, warnVaccines.get(i), i);
 		}
 
-	}
+		//设置行程事件
+		if (!CommonUtils.isListEmpty(warnVaccines)) {
+			calendarVaccines = warnVaccines;
+		}
+		for (Vaccine item : calendarVaccines) {
+			addCalendarEvent(user, item);
+		}
 
+		//设置重复提醒
+		if (!CommonUtils.isListEmpty(warnVaccines)) {
+			setRestartTime(12);
+			stopServiceAndRestart();
+		}else {
+			stopService();
+		}
+	}
 
 	/**
 	 * @param user
@@ -129,34 +143,23 @@ public class TimerService extends Service {
 	 */
 	private void sendNotification(User user, Vaccine vaccine, int i) {
 		Baby baby = user.getBaby();
-		String userGender = "";
-		if (user.getGender() == 1) {
-			userGender = "老爹";
-		}else {
-			userGender = "老妈";
-		}
-
 		//获取NotificationManager实例
 		NotificationManager notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		//实例化NotificationCompat.Builde并设置相关属性
-		String title = baby.getBabyName() + "需要接种" +vaccine.getVaccine() + "啦~";
-		if (!CommonUtils.isTextEmpty(vaccine.getTimes())) {
-			title = title + "(" + vaccine.getTimes() + ")";
-		}
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 		builder.setPriority(NotificationManager.IMPORTANCE_MAX)
 				.setCategory(Notification.CATEGORY_SYSTEM)
 				.setVisibility(Notification.VISIBILITY_PUBLIC)
 				.setSmallIcon(R.mipmap.ic_notification_vaccine)
-				.setTicker(userGender + ",该给您的" + baby.getBabyName() + "接种疫苗啦~")
-				.setContentTitle(title)
+				.setTicker(getAlertTitle(user, vaccine))
+				.setContentTitle(getAlertTitle(user, vaccine))
 				.setContentText(vaccine.getInfo())
 				.setAutoCancel(true)
 				.setShowWhen(false)
 				.setDefaults(Notification.DEFAULT_ALL);
 		if (FileUtils.isFileExist(AppUtil.INSTANCE.getBabyPicPath(baby))) {
 			NotificationCompat.BigPictureStyle bigPictureStyle = new NotificationCompat.BigPictureStyle();
-			bigPictureStyle.setBigContentTitle(title);
+			bigPictureStyle.setBigContentTitle(getAlertTitle(user, vaccine));
 			bigPictureStyle.setSummaryText(vaccine.getInfo());
 			Bitmap bigPicture = BitmapFactory.decodeFile(AppUtil.INSTANCE.getBabyPicPath(baby));
 			bigPictureStyle.bigPicture(bigPicture);
@@ -167,6 +170,22 @@ public class TimerService extends Service {
 		PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
 		builder.setContentIntent(pendingIntent);
 		notifyManager.notify(baby.getAge() + i, builder.build());
+
+	}
+
+	private void addCalendarEvent(User user, Vaccine vaccine) {
+		CalendarReminderUtil.deleteCalendarEvent(getApplicationContext(), getAlertTitle(user, vaccine));
+		Baby baby = user.getBaby();
+		SimpleDateFormat sdfDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			Date date = sdfDateFormat.parse(baby.getBabyBirth());
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH) + vaccine.getAge2day());
+			CalendarReminderUtil.addCalendarEvent(getApplicationContext(), getAlertTitle(user, vaccine), vaccine.getInfo(), calendar.getTime().getTime(), 1);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
 
@@ -208,25 +227,19 @@ public class TimerService extends Service {
 				+ RESTART_FREQUENCY, mAlarmSender);
 	}
 
-	private boolean shouldSynchDaily() {
-		// 如果正在同步字典，就不再同步
-		SimpleDateFormat currDateSdf = new SimpleDateFormat("yyyy-MM-dd");
-		SimpleDateFormat syncDateSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		long currTimeMillis = System.currentTimeMillis();
-		String syncTime = "00:00";
-		String syncDate = currDateSdf.format(currTimeMillis) + " " + syncTime;
-		Calendar syncCalendar = Calendar.getInstance();
-		try {
-			syncCalendar.setTime(syncDateSdf.parse(syncDate));
-		} catch (ParseException e) {
-			e.printStackTrace();
+	private String getAlertTitle(User user, Vaccine vaccine) {
+		Baby baby = user.getBaby();
+		String userGender = "";
+		if (user.getGender() == 1) {
+			userGender = "老爹";
+		}else {
+			userGender = "老妈";
 		}
-		if (currTimeMillis > syncCalendar.getTimeInMillis() - RESTART_FREQUENCY
-				&& currTimeMillis < syncCalendar.getTimeInMillis()
-						+ RESTART_FREQUENCY) {
-			return true;
+		String title = userGender + ",该给您的" + baby.getBabyName() + "接种" + vaccine.getVaccine() + "啦~";
+		if (!CommonUtils.isTextEmpty(vaccine.getTimes())) {
+			title = title + "(" + vaccine.getTimes() + ")";
 		}
-		return false;
+		return title;
 	}
 
 }

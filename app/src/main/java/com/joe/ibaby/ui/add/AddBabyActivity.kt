@@ -154,9 +154,6 @@ class AddBabyActivity : BaseActivity() {
 
     private fun saveBaby() {
         val babyNickname = edit_baby_nickname.text.toString()
-        if (babyNickname.contains("(")) {
-
-        }
         val babyBirth = tv_birth.text.toString()
         var babyGender = DEFAULT_GENDER
         if (rg_gender.checkedRadioButtonId == R.id.rdbtn_girl) {
@@ -167,6 +164,7 @@ class AddBabyActivity : BaseActivity() {
         }else if (babyBirth.equals(ResourceUtil.getString(R.string.txt_baby_birth_default))) {
             TastyToastUtil.showInfo(String.format(getString(R.string.toast_info_baby_birth), AppUtil.getBabyCall(mUser)))
         }else {
+            ctv_edit_baby.toggle()
             val dialog = DialogUtil.showProgress(this, "保存中...")
 
             if (mUser.baby == null) {
@@ -264,7 +262,7 @@ class AddBabyActivity : BaseActivity() {
         if (mUser.baby == null) {
             TastyToastUtil.showInfo("哼!你还没添加宝宝呢~")
         }else {
-            DialogUtil.showAlertDialog(mContext!!, mUser.baby)
+            DialogUtil.showAlertDialog(mContext!!, mHelper!!)
         }
     }
 
