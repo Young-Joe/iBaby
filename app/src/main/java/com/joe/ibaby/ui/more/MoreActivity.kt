@@ -1,6 +1,5 @@
 package com.joe.ibaby.ui.more
 
-import android.util.Log
 import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebView

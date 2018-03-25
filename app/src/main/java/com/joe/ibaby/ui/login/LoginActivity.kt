@@ -5,20 +5,16 @@ import android.app.Dialog
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.support.design.widget.TextInputLayout
-import cn.bmob.v3.BmobQuery
 import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.DownloadFileListener
 import cn.bmob.v3.listener.FindListener
 import com.jakewharton.rxbinding2.view.RxView
 import com.jakewharton.rxbinding2.widget.RxTextView
 import com.joe.customlibrary.common.CommonUtils
-import com.joe.customlibrary.rxjava.RxObservable
-import com.joe.customlibrary.utils.FileUtils
 import com.joe.ibaby.R
 import com.joe.ibaby.base.BaseActivity
 import com.joe.ibaby.dao.beans.Baby
 import com.joe.ibaby.dao.beans.User
-import com.joe.ibaby.dao.offline.OffLineDataLogic
 import com.joe.ibaby.helper.*
 import com.joe.ibaby.ui.register.RegisterActivity
 import com.shundaojia.live.Live
@@ -80,9 +76,7 @@ class LoginActivity : BaseActivity(){
 
     }
 
-    override fun initData() {
-
-    }
+    override fun initData() {}
 
     private fun goRegister() {
         startActivityForResult(Intent(this, RegisterActivity::class.java), REGISTER_REQUEST_CODE)
@@ -119,18 +113,12 @@ class LoginActivity : BaseActivity(){
 
     private fun loginTask() {
         val dialog = DialogUtil.showProgress(this, "登录中...")
-
-        val user = User()
-        user.userId = edt_user_id.text.toString()
-        user.password = edt_password.text.toString()
-
-        val bmobQuery = BmobQuery<User>()
-        bmobQuery.addWhereEqualTo("userId", user.userId)
-        bmobQuery.addWhereEqualTo("password", user.password)
-        bmobQuery.findObjects(object : FindListener<User>(){
-            override fun done(users: MutableList<User>?, e: BmobException?) {
+        val userId = edt_user_id.text.toString()
+        val password = edt_password.text.toString()
+        mViewModel?.loginTask(userId, password, object : FindListener<User>() {
+            override fun done(users: MutableList<User>?, p1: BmobException?) {
                 CommonUtils.dismiss(dialog, mContext)
-                BmobUtil.onHandleBmob(e, object : BmobUtil.OnHandleBmobListener() {
+                BmobUtil.onHandleBmob(p1, object : BmobUtil.OnHandleBmobListener() {
                     override fun onSuccess() {
                         if (users?.size == 0) {
                             TastyToastUtil.showInfo("请检查账号.密码是否正确")
@@ -141,18 +129,17 @@ class LoginActivity : BaseActivity(){
                     }
 
                     override fun onError() {
-                        RxObservable<User>()
-                                .getObservableIo { OffLineDataLogic.instance?.getUserById(user.userId) }
+                        mViewModel!!.getLocalUserById(userId)
                                 .compose(Live.bindLifecycle(this@LoginActivity))
                                 .subscribe { t ->
-                                    if (t != null) {
-                                        if (t.password.equals(user.password)) {
+                                    if (t.isDataRight) {
+                                        if (mViewModel!!.checkUserPswd(t.obj as User, password)) {
                                             saveCurrentUser(users!![0])
                                             loginSuccess(true)
                                         }else {
                                             TastyToastUtil.showError("阿欧, 密码不对哦~")
                                         }
-                                    }else{
+                                    }else {
                                         TastyToastUtil.showError("阿欧, 你好像还没注册哦~")
                                     }
                                 }
@@ -160,6 +147,7 @@ class LoginActivity : BaseActivity(){
 
                 })
             }
+
         })
     }
 
@@ -172,24 +160,17 @@ class LoginActivity : BaseActivity(){
     }
 
     private fun saveCurrentUser(user: User) {
-        PreferenceUtil.saveField(PreferenceUtil.CURRENT_USER, user.userId)
-        OffLineDataLogic.instance?.saveUser(user)
+        mViewModel?.saveCurrentUser(user)
     }
 
     private fun checkUserBaby(user: User) {
         val dialog = DialogUtil.showProgress(this, "Baby数据加载中...")
-        val baby = Baby()
-        baby.userId = user.userId
-
-        val bmobQuery = BmobQuery<Baby>()
-        bmobQuery.addWhereEqualTo("userId", baby.userId)
-        bmobQuery.findObjects(object : FindListener<Baby>() {
+        mViewModel!!.loadUserBaby(user.userId, object : FindListener<Baby>() {
             override fun done(p0: MutableList<Baby>?, p1: BmobException?) {
                 CommonUtils.dismiss(dialog, mContext)
                 BmobUtil.onHandleBmob(p1, object : BmobUtil.OnHandleBmobListener(){
                     override fun onSuccess() {
-                        OffLineDataLogic.instance?.saveBaby(p0?.get(0)!!)
-                        checkBabyPic(p0?.get(0))
+                        mViewModel?.saveBabyLoadBabyPic(p0?.get(0))
                         checkLocalUserHeader(user)
                     }
 
@@ -198,27 +179,11 @@ class LoginActivity : BaseActivity(){
                     }
                 })
             }
-
         })
     }
 
-    private fun checkBabyPic(baby: Baby?) {
-        if (baby == null) return
-        if (!FileUtils.isFileExist(AppUtil.getBabyPicPath(baby!!)) && baby.babyPic != null) {
-            baby.babyPic.download(File(AppUtil.getBabyPicPath(baby)), object : DownloadFileListener() {
-                override fun onProgress(p0: Int?, p1: Long) {
-
-                }
-
-                override fun done(p0: String?, p1: BmobException?) {}
-
-            })
-        }
-
-    }
-
     private fun checkLocalUserHeader(user: User) {
-        if (!FileUtils.isFileExist(AppUtil.getUserHeaderPath(user)) && user.userHead != null) {
+        if (mViewModel!!.checkLocalUserHeaderExist(user)) {
             user.userHead.download(File(AppUtil.getUserHeaderPath(user)), object : DownloadFileListener() {
                 var dialog: Dialog? = null
                 override fun onStart() {
