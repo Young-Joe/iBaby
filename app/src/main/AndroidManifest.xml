@@ -18,8 +18,12 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
 
-    <uses-permission android:name="android.permission.READ_CALENDAR" />
-    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
+
+    <!--推送所需的权限-->
+    <!--<uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />-->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:name=".MainApplication"
@@ -56,6 +60,14 @@
         </activity>
         <activity android:name="com.soundcloud.android.crop.CropImageActivity"/>
 
+        <activity android:name=".ui.add.AddBabyActivity" />
+        <activity android:name=".ui.more.MoreActivity" />
+
+        <activity
+            android:name="cn.bmob.v3.update.UpdateDialogActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+        </activity>
+
         <provider
             android:name=".helper.HeaderFileProvider"
             android:authorities="${applicationId}.HeaderProvider"
@@ -67,76 +79,62 @@
         </provider>
 
         <provider
-            android:authorities="cn.bmob.update.fileprovider"
             android:name="android.support.v4.content.FileProvider"
-            android:grantUriPermissions="true"
-            android:exported="false">
+            android:authorities="cn.bmob.update.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+                android:resource="@xml/file_paths"/>
         </provider>
 
-        <activity android:name=".ui.add.AddBabyActivity">
-        </activity>
 
-        <!-- &lt;!&ndash;TODO 集成：1.2、添加推送所需要的服务和广播&ndash;&gt; -->
-        <!-- <service -->
-        <!-- android:label="PushService" -->
-        <!-- android:name="cn.bmob.push.lib.service.PushService" -->
-        <!-- android:process=":bmobpush" -->
-        <!-- android:exported="true"> -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="cn.bmob.push.lib.service.PushService"/> -->
-        <!-- </intent-filter> -->
-        <!-- </service> -->
+        <!--TODO 集成：1.2、添加推送所需要的服务和广播-->
+        <service
+            android:name="cn.bmob.push.lib.service.PushService"
+            android:exported="true"
+            android:label="PushService"
+            android:process=":bmobpush">
+            <intent-filter>
+                <action android:name="cn.bmob.push.lib.service.PushService"/>
+            </intent-filter>
+        </service>
 
+        <!-- 用于进程保活 -->
+        <service
+            android:name="cn.bmob.push.lib.service.PushNotifyService"
+            android:process=":bmobpush">
+        </service>
 
-        <!-- &lt;!&ndash; 用于进程保活 &ndash;&gt; -->
-        <!-- <service -->
-        <!-- android:name="cn.bmob.push.lib.service.PushNotifyService" -->
-        <!-- android:process=":bmobpush" > -->
-        <!-- </service> -->
+        <receiver android:name="cn.bmob.push.PushReceiver">
+            <intent-filter>
+                <!-- 系统启动完成后会调用 -->
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <!-- 解锁完成后会调用 -->
+                <action android:name="android.intent.action.USER_PRESENT"/>
+                <!-- 监听网络连通性 -->
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
 
+        <!-- 第3步中创建的消息接收器，在这里进行注册 -->
+        <receiver android:name=".dao.online.PushMessageReceiver">
+            <intent-filter>
+                <action android:name="cn.bmob.push.action.MESSAGE"/>
+            </intent-filter>
+        </receiver>
 
-        <!-- <receiver android:name="cn.bmob.push.PushReceiver" > -->
-        <!-- <intent-filter> -->
-        <!-- &lt;!&ndash; 系统启动完成后会调用 &ndash;&gt; -->
-        <!-- <action android:name="android.intent.action.BOOT_COMPLETED" /> -->
-        <!-- &lt;!&ndash; 解锁完成后会调用 &ndash;&gt; -->
-        <!-- <action android:name="android.intent.action.USER_PRESENT" /> -->
-        <!-- &lt;!&ndash; 监听网络连通性 &ndash;&gt; -->
-        <!-- <action android:name="android.net.conn.CONNECTIVITY_CHANGE" /> -->
-        <!-- </intent-filter> -->
-        <!-- </receiver> -->
-
-
-        <!-- &lt;!&ndash; 第3步中创建的消息接收器，在这里进行注册 &ndash;&gt; -->
-        <!-- <receiver android:name=".dao.online.PushMessageReceiver"> -->
-        <!-- <intent-filter > -->
-        <!-- <action android:name="cn.bmob.push.action.MESSAGE"/> -->
-        <!-- </intent-filter> -->
-        <!-- </receiver> -->
-
-
-        <!-- &lt;!&ndash; 接收心跳和唤醒的广播，要和PushService运行在同个进程 &ndash;&gt; -->
-        <!-- <receiver -->
-        <!-- android:name="cn.bmob.push.PushNotifyReceiver" -->
-        <!-- android:process=":bmobpush" > -->
-        <!-- <intent-filter> -->
-        <!-- &lt;!&ndash; 接收心跳广播的action &ndash;&gt; -->
-        <!-- <action android:name="cn.bmob.push.action.HEARTBEAT" /> -->
-        <!-- &lt;!&ndash; 接收唤醒广播的action &ndash;&gt; -->
-        <!-- <action android:name="cn.bmob.push.action.NOTIFY" /> -->
-        <!-- </intent-filter> -->
-        <!-- </receiver> -->
-
-        <activity android:name=".ui.more.MoreActivity">
-        </activity>
-
-        <activity
-            android:name="cn.bmob.v3.update.UpdateDialogActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
-        </activity>
+        <!-- 接收心跳和唤醒的广播，要和PushService运行在同个进程 -->
+        <receiver
+            android:name="cn.bmob.push.PushNotifyReceiver"
+            android:process=":bmobpush">
+            <intent-filter>
+                <!-- 接收心跳广播的action -->
+                <action android:name="cn.bmob.push.action.HEARTBEAT"/>
+                <!-- 接收唤醒广播的action -->
+                <action android:name="cn.bmob.push.action.NOTIFY"/>
+            </intent-filter>
+        </receiver>
 
     </application>
 

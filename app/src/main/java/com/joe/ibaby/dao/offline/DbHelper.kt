@@ -2,7 +2,6 @@ package com.joe.ibaby.dao.offline
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-
 import com.joe.ibaby.dao.greendao.DaoMaster
 
 

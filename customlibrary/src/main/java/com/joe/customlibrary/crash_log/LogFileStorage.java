@@ -13,7 +13,7 @@ public class LogFileStorage {
 
 	private static final String TAG = LogFileStorage.class.getName();
 
-	public static final String APP_FILE = "MobileCare";
+	public static final String APP_FILE = "iBaby";
 
 	public static final String LOG_SUFFIX = "崩溃日志.txt";
 	

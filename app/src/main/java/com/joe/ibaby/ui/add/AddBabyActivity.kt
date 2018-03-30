@@ -239,11 +239,6 @@ class AddBabyActivity : BaseActivity() {
         tv_alert.visibility = View.VISIBLE
         loadLocalBabyPic(baby)
         edit_baby_nickname.setText(baby.babyName)
-        edit_baby_nickname.setOnFocusChangeListener { v, hasFocus ->
-            if (hasFocus) {
-                edit_baby_nickname.setText(baby.babyName)
-            }
-        }
         tv_birth.text = baby.babyBirth
         if (baby.gender == BaseBean.DEFAULT_GENDER) {
             rdbtn_boy.isChecked = true

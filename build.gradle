@@ -31,7 +31,7 @@ task clean(type: Delete) {
 def supportVersion = "26.1.0"
 
 ext{
-    versionCode = 1
+    versionCode = 2
     dbVersion = 1
     buildTools = "26.0.2"
     targetSDKVersion = 26
